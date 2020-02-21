@@ -2,6 +2,7 @@ import random
 import re
 import sys
 import os
+import aencode
 
 
 def clear():
@@ -11,15 +12,27 @@ def clear():
         os.system("cls")
 
 
-def create_file():
+def aencodes(text):
+    codes = aencode.AbcEncode()
+
+    return codes.encode(str(text))
+
+
+def adecodes(text):
+    codes = aencode.AbcEncode()
+    
+    return codes.decode(str(text))
+
+
+def create_file(wallet="1"):
     opnr = open("wallet.txt", "w+")
-    opnr.write("1")
+    opnr.write(aencodes(wallet))
     opnr.close()
 
 
 def file_writer(data):
     opnr = open("wallet.txt", "w")
-    opnr.write(str(data))
+    opnr.write(aencodes(str(data)))
     opnr.close()
 
 
@@ -28,7 +41,7 @@ def file_reader():
     data = opnr.read()
     opnr.close()
     
-    return data
+    return adecodes(data)
 
 
 def gamble(bets):
@@ -48,6 +61,7 @@ if __name__ == "__main__":
         pattern_beg = r"beg"
         level = 3
         #wallet = int(file_reader())
+
         while True:
             if int(file_reader()) < 100 and int(file_reader()) > 30:
                 randnum = random.randint(23, int(file_reader()))
@@ -101,12 +115,38 @@ if __name__ == "__main__":
                         print("You Got: ", randints)
                 else:
                     print("You Got 0 Coins")
-            
+            elif user_input.strip() == "put all":
+                bets = int(file_reader())
+                if bets <= int(file_reader()):
+                    if gamble(bets) == 0:
+                        file_writer(str(int(file_reader())+randnum))
+                        #wallet += randnum
+                        file_writer(int(file_reader()))
+                        print("__________________")
+                        print("|You Won: {0}     |".format(randnum))
+                        print("|Wallet: {0}      |".format(int(file_reader())))
+                        print("|_________________|")
+                        level += 9
+                    else:
+                        file_writer(str(int(file_reader())-bets))
+                        if int(file_reader()) < 0:
+                            file_writer("0")
+                        
+                        #file_writer(str(int(file_reader())))
+                        print("__________________")
+                        print("|You Lost: {0}   |".format(bets))
+                        print("|Wallet: {0}     |".format(int(file_reader())))
+                        print("|________________|")
+                        level -= 3
+                else:
+                    print ("You Don't enough Coins")
+
             elif user_input.strip() == "exit":
                 exit()
             elif user_input.strip() == "commands":
                 print("commands ->   shows all the Commands")
                 print("bet [You're amount]  ->   Puts a bet ")
+                print("put all ->   Bets all the coins You have")
                 print("wallet ->   Shows You're Wallet")
                 print("beg ->   beg for coins")
                 print("exit ->   Exit Game")
@@ -116,6 +156,8 @@ if __name__ == "__main__":
         create_file()
     except KeyboardInterrupt:
         print("Type exit To Exit")
+    except ValueError:
+        print("Error Changing wallet to fix")
+        create_file("10")
     except Exception as error:
         print(error)
-
